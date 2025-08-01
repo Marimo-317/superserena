@@ -1,0 +1,319 @@
+name: SuperClaude Quality Gates
+
+# Comprehensive quality validation workflow
+# Runs on all PRs and integrates with SuperClaude main workflow
+
+permissions:  
+  contents: read
+  pull-requests: write
+  checks: write
+  security-events: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main, develop]
+  schedule:
+    # Weekly comprehensive analysis
+    - cron: '0 2 * * 0'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Security validation
+  security-audit:
+    runs-on: ubuntu-latest
+    name: 🛡️ Security Validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security Audit
+        run: |
+          # npm audit with detailed output
+          npm audit --audit-level=moderate --json > security-report.json || true
+          
+          # Generate human-readable summary
+          echo "## Security Audit Summary" > security-summary.md
+          echo "**Date**: $(date)" >> security-summary.md
+          echo "**Status**: $(npm audit --audit-level=moderate && echo 'PASS' || echo 'ATTENTION REQUIRED')" >> security-summary.md
+
+      - name: SuperClaude Security Review
+        if: github.event_name == 'pull_request'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            🛡️ SuperClaude Security Review
+            
+            Execute comprehensive security analysis:
+            
+            1. **Use sparc-security-reviewer** for complete audit
+            2. **Analyze security-report.json** for vulnerabilities
+            3. **Review code changes** for security implications:
+               - Authentication/authorization issues
+               - Input validation vulnerabilities
+               - SQL injection risks
+               - XSS prevention
+               - Sensitive data exposure
+               - OWASP Top 10 compliance
+            
+            4. **Generate security recommendations**
+            5. **Assess risk levels** (Critical/High/Medium/Low)
+            6. **Provide remediation steps** for identified issues
+            
+            Focus on:
+            - New dependencies and their security posture
+            - Code patterns that might introduce vulnerabilities
+            - Configuration changes affecting security
+            - API endpoints and data handling
+            
+            📊 Provide actionable security assessment with specific recommendations
+
+      - name: Upload security artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-${{ github.run_number }}
+          path: |
+            security-report.json
+            security-summary.md
+          retention-days: 30
+
+  # Performance validation
+  performance-audit:
+    runs-on: ubuntu-latest
+    name: ⚡ Performance Validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: |
+          npm run build || echo "No build script available"
+          
+      - name: Performance Benchmarks
+        run: |
+          # Bundle size analysis
+          if [ -f "dist/bundle.js" ]; then
+            echo "Bundle size: $(du -h dist/bundle.js | cut -f1)" > performance-report.md
+          fi
+          
+          # Memory usage analysis
+          if command -v node &> /dev/null; then
+            echo "Node.js memory usage test..." >> performance-report.md
+            node -e "console.log('Memory usage:', process.memoryUsage())" >> performance-report.md
+          fi
+          
+          # Load test if API endpoints exist
+          if [ -f "src/app.ts" ] || [ -f "src/server.ts" ]; then
+            echo "Starting basic load test..." >> performance-report.md
+            # Add load testing logic here
+          fi
+
+      - name: SuperClaude Performance Review
+        if: github.event_name == 'pull_request'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            ⚡ SuperClaude Performance Review
+            
+            Execute comprehensive performance analysis:
+            
+            1. **Use sparc-performance** for optimization analysis
+            2. **Review performance-report.md** for metrics
+            3. **Analyze code changes** for performance impact:
+               - Algorithm complexity (Big O analysis)
+               - Database query optimization
+               - Memory usage patterns
+               - CPU-intensive operations
+               - Network request efficiency
+               - Bundle size impact
+            
+            4. **Benchmark against targets**:
+               - API response time: <200ms
+               - Bundle size: <500KB initial
+               - Memory usage: <100MB typical
+               - Database queries: <50ms average
+            
+            5. **Identify bottlenecks** and optimization opportunities
+            6. **Provide specific optimization recommendations**
+            
+            Focus on:
+            - New code patterns affecting performance
+            - Dependencies adding significant overhead
+            - Algorithmic improvements possible
+            - Caching opportunities
+            
+            📊 Provide actionable performance optimization recommendations
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-audit-${{ github.run_number }}
+          path: |
+            performance-report.md
+            dist/
+          retention-days: 30
+
+  # Code quality validation
+  code-quality:
+    runs-on: ubuntu-latest
+    name: 📊 Code Quality Analysis
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Linting
+        run: |
+          # ESLint analysis
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
+            npx eslint src/ --ext .ts,.js --format json > eslint-report.json || true
+            npx eslint src/ --ext .ts,.js > eslint-summary.txt || true
+          fi
+
+      - name: TypeScript Compilation
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit --pretty > typescript-check.txt 2>&1 || true
+          fi
+
+      - name: Test Coverage
+        run: |
+          npm test -- --coverage --json > coverage-report.json || true
+          if [ -f "coverage/lcov-report/index.html" ]; then
+            echo "Coverage report generated successfully"
+          fi
+
+      - name: SuperClaude Quality Review
+        if: github.event_name == 'pull_request'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            📊 SuperClaude Code Quality Review
+            
+            Execute comprehensive quality analysis:
+            
+            1. **Use sparc-coder** for code quality assessment
+            2. **Analyze quality reports**:
+               - ESLint violations and patterns
+               - TypeScript compilation issues
+               - Test coverage metrics
+               - Code complexity metrics
+            
+            3. **Evaluate code changes** against quality standards:
+               - SOLID principles compliance
+               - DRY (Don't Repeat Yourself) violations
+               - Code readability and maintainability
+               - Naming conventions consistency
+               - Error handling patterns
+               - Documentation completeness
+            
+            4. **Quality Gates Validation**:
+               - Test coverage >90% (unit), >70% (integration)
+               - Zero critical ESLint violations
+               - No TypeScript compilation errors
+               - Cyclomatic complexity <10 per function
+               - File size <500 lines (with justification for larger)
+            
+            5. **Technical Debt Assessment**:
+               - Identify newly introduced technical debt
+               - Highlight debt reduction opportunities
+               - Suggest refactoring priorities
+            
+            📊 Provide specific quality improvement recommendations with priority levels
+
+      - name: Upload quality artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-${{ github.run_number }}  
+          path: |
+            eslint-report.json
+            typescript-check.txt
+            coverage-report.json
+            coverage/
+          retention-days: 30
+
+  # Comprehensive quality gate validation
+  quality-gate-summary:
+    runs-on: ubuntu-latest
+    name: 🎯 Quality Gates Summary
+    needs: [security-audit, performance-audit, code-quality]
+    if: always()
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: SuperClaude Quality Gates Summary
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            🎯 SuperClaude Quality Gates Summary
+            
+            **Comprehensive Quality Assessment**
+            
+            Analyze all quality validation results and provide:
+            
+            1. **Overall Quality Score** (0-100)
+            2. **Gate Status Summary**:
+               - 🛡️ Security: [PASS/FAIL/WARNING]
+               - ⚡ Performance: [PASS/FAIL/WARNING]
+               - 📊 Code Quality: [PASS/FAIL/WARNING]
+               - 🧪 Testing: [PASS/FAIL/WARNING]
+            
+            3. **Critical Issues Requiring Attention**
+            4. **Recommendations for Improvement**
+            5. **Merge Readiness Assessment**
+            
+            6. **Quality Trend Analysis** (if historical data available)
+            7. **Technical Debt Impact Assessment**
+            
+            Based on all artifacts from security, performance, and quality audits:
+            - Prioritize issues by severity and impact
+            - Provide actionable next steps
+            - Recommend approval or additional work needed
+            
+            Use comprehensive SuperClaude analysis for enterprise-grade quality assurance.
+            
+            📊 Generate executive summary suitable for stakeholder review

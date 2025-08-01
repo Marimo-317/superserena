@@ -1,0 +1,136 @@
+name: 🐛 Bug Report (SuperClaude Auto-Fix)
+description: Report a bug for automatic analysis and fixing via SuperClaude
+title: "[BUG] "
+labels: ["bug", "superclaud-auto"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔍 SuperClaude Auto-Fix
+        
+        This bug will be automatically analyzed and fixed by SuperClaude using:
+        - **Root Cause Analysis** via analyzer persona
+        - **Multi-Agent Debugging** for comprehensive investigation
+        - **Security Review** for vulnerability assessment
+        - **Performance Impact** analysis and optimization
+        
+        Mention `@claude` to trigger automatic debugging!
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Description
+      description: Clear description of the issue
+      placeholder: |
+        Example: "API returns 500 error when creating user with empty email"
+        
+        Describe:
+        - What you expected to happen
+        - What actually happened
+        - When this issue occurs
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Step-by-step instructions to reproduce the bug
+      placeholder: |
+        1. Navigate to user registration endpoint
+        2. Send POST request with empty email field
+        3. Observe 500 internal server error
+        4. Check server logs for stack trace
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What should happen instead
+      placeholder: |
+        - Should return 400 Bad Request
+        - Should include validation error message
+        - Should not crash the server
+        - Should log the validation error appropriately
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 📋 Error Logs/Screenshots
+      description: Paste relevant error messages, stack traces, or screenshots
+      placeholder: |
+        ```
+        Error: Cannot read property 'email' of undefined
+        at UserController.createUser (/src/controllers/UserController.ts:45)
+        at ...
+        ```
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severity Level
+      description: Impact of this bug
+      options:
+        - Critical (system down, data loss)
+        - High (major functionality broken)
+        - Medium (feature partially working)
+        - Low (minor issue, workaround available)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-areas
+    attributes:
+      label: 🎯 Affected Areas
+      description: Which parts of the system are affected
+      options:
+        - label: Authentication/Authorization
+        - label: API Endpoints
+        - label: Database Operations
+        - label: Frontend UI
+        - label: Performance
+        - label: Security
+        - label: Testing
+        - label: Documentation
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌐 Environment Information
+      description: System information where bug occurs
+      placeholder: |
+        - OS: Windows 11
+        - Node.js version: 18.x
+        - npm version: 9.x
+        - Browser: Chrome 120
+        - TypeScript version: 5.x
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Any other relevant information
+      placeholder: |
+        - Recent changes that might be related
+        - Workarounds you've tried
+        - Frequency of occurrence
+        - Related issues or PRs
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🔧 Auto-Fix Process
+        
+        1. **Analysis**: SuperClaude analyzer will investigate root cause
+        2. **Debugging**: Multi-agent coordination for comprehensive fix
+        3. **Security Check**: Vulnerability assessment and security validation
+        4. **Testing**: Comprehensive test coverage for the fix
+        5. **PR Creation**: Automated pull request with bug fix
+        
+        **To trigger auto-fix**: Comment `@claude debug and fix this issue`

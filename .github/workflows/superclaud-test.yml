@@ -1,0 +1,278 @@
+name: SuperClaude Integration Test
+
+# Simple test workflow to validate SuperClaude GitHub Actions integration
+# Run this manually to verify everything is working correctly
+
+permissions:
+  contents: read
+  pull-requests: write  
+  issues: write
+  checks: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of integration test'
+        required: true
+        default: 'basic'
+        type: choice
+        options:
+        - basic
+        - sparc-demo
+        - quality-gates
+        - full-integration
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    name: 🧪 SuperClaude Integration Test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          echo "Dependencies installed successfully"
+
+      - name: Environment Validation
+        run: |
+          echo "## Environment Validation" > test-report.md
+          echo "- Node.js version: $(node --version)" >> test-report.md
+          echo "- npm version: $(npm --version)" >> test-report.md
+          echo "- Repository: ${{ github.repository }}" >> test-report.md
+          echo "- Workflow: ${{ github.workflow }}" >> test-report.md
+          echo "- Test type: ${{ github.event.inputs.test_type }}" >> test-report.md
+          echo "- Timestamp: $(date -u)" >> test-report.md
+
+      - name: Basic SuperClaude Test
+        if: github.event.inputs.test_type == 'basic' || github.event.inputs.test_type == 'full-integration'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            🧪 SuperClaude Basic Integration Test
+            
+            **Test Objective**: Validate SuperClaude framework integration with GitHub Actions
+            
+            Please perform the following validation:
+            
+            1. **Environment Check**: Confirm SuperClaude framework is accessible
+            2. **Command Availability**: Test core SuperClaude commands:
+               - /analyze --scope project
+               - TodoWrite functionality
+               - SPARC methodology availability
+            
+            3. **Agent Access**: Verify specialist agents are available:
+               - sparc-orchestrator
+               - sparc-architect  
+               - sparc-coder
+               - sparc-security-reviewer
+               - sparc-performance
+            
+            4. **Integration Status**: Report on:
+               - GitHub Actions integration status
+               - OAuth authentication success
+               - Repository access and permissions
+               - Workflow execution environment
+            
+            5. **Quality Gates**: Validate 8-step quality framework:
+               - Syntax validation capability
+               - Type checking integration
+               - Linting support
+               - Security assessment
+               - Testing framework
+               - Performance analysis
+               - Documentation generation
+               - Integration validation
+            
+            **Expected Output**: Comprehensive status report with ✅/❌ indicators for each component
+            
+            🎯 Provide clear PASS/FAIL status and any recommended actions
+
+      - name: SPARC Methodology Demo
+        if: github.event.inputs.test_type == 'sparc-demo' || github.event.inputs.test_type == 'full-integration'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            🏗️ SPARC Methodology Demo Test
+            
+            **Demonstration Objective**: Show SPARC methodology in action
+            
+            **Simulated Feature**: "Add request logging middleware"
+            
+            Execute abbreviated SPARC cycle:
+            
+            ## Specification (S)
+            - Define clear requirements for request logging
+            - Specify logging format and destinations
+            - Establish performance requirements
+            
+            ## Pseudocode (P)
+            - Design middleware function signature
+            - Plan logging data structure
+            - Outline error handling approach
+            
+            ## Architecture (A)
+            - Integration point identification
+            - Performance impact assessment
+            - Configuration strategy
+            
+            ## Refinement (R)
+            - Code quality considerations
+            - Testing strategy outline
+            - Security implications
+            
+            ## Completion (C)
+            - Implementation readiness checklist
+            - Deployment considerations
+            - Monitoring and maintenance plan
+            
+            **Use SuperClaude agents**:
+            - Tell sparc-orchestrator to coordinate the demo
+            - Use sparc-architect for design validation
+            - Use sparc-coder for implementation planning
+            
+            🎯 Demonstrate structured thinking and agent coordination
+
+      - name: Quality Gates Validation
+        if: github.event.inputs.test_type == 'quality-gates' || github.event.inputs.test_type == 'full-integration'
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            📊 Quality Gates Validation Test
+            
+            **Objective**: Validate 8-step quality gate framework
+            
+            Analyze current project and demonstrate quality assessment:
+            
+            ## Step 1: Syntax Validation ✅
+            - TypeScript/JavaScript syntax compliance
+            - Configuration file validity
+            - Package.json structure validation
+            
+            ## Step 2: Type Checking ✅
+            - TypeScript type safety analysis
+            - Interface consistency validation
+            - Generic usage optimization
+            
+            ## Step 3: Linting Compliance ✅
+            - ESLint rule adherence
+            - Code style consistency
+            - Best practice enforcement
+            
+            ## Step 4: Security Assessment ✅
+            - Vulnerability scanning simulation
+            - OWASP compliance check
+            - Dependency security validation
+            
+            ## Step 5: Testing Framework ✅
+            - Test coverage analysis
+            - Test quality assessment
+            - Testing strategy validation
+            
+            ## Step 6: Performance Analysis ✅
+            - Code efficiency evaluation
+            - Resource usage optimization
+            - Scalability considerations
+            
+            ## Step 7: Documentation Validation ✅
+            - Code documentation completeness
+            - API documentation accuracy
+            - README and setup instructions
+            
+            ## Step 8: Integration Readiness ✅
+            - Deployment preparation checklist
+            - Environment compatibility
+            - Rollback strategy validation
+            
+            **Use specialists**:
+            - sparc-security-reviewer for security gates
+            - sparc-performance for performance gates
+            - sparc-tdd for testing gates
+            
+            🎯 Provide comprehensive quality scorecard with specific recommendations
+
+      - name: Generate Test Results
+        if: always()
+        run: |
+          echo "## SuperClaude Integration Test Results" >> test-report.md
+          echo "" >> test-report.md
+          echo "**Test Type**: ${{ github.event.inputs.test_type }}" >> test-report.md
+          echo "**Status**: ${{ job.status }}" >> test-report.md
+          echo "**Completion Time**: $(date -u)" >> test-report.md
+          echo "" >> test-report.md
+          
+          # Check for workflow success indicators
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ **Overall Result**: INTEGRATION TEST PASSED" >> test-report.md
+            echo "" >> test-report.md
+            echo "SuperClaude GitHub Actions integration is working correctly!" >> test-report.md
+            echo "" >> test-report.md
+            echo "## Next Steps" >> test-report.md
+            echo "1. Create a test issue using the feature request template" >> test-report.md
+            echo "2. Comment '@claude implement this feature' to trigger automation" >> test-report.md
+            echo "3. Monitor the automated development process" >> test-report.md
+            echo "4. Review the generated PR for quality and completeness" >> test-report.md
+          else
+            echo "❌ **Overall Result**: INTEGRATION TEST FAILED" >> test-report.md
+            echo "" >> test-report.md
+            echo "Please check the workflow logs and resolve issues." >> test-report.md
+            echo "" >> test-report.md
+            echo "## Troubleshooting Steps" >> test-report.md
+            echo "1. Verify CLAUDE_CODE_OAUTH_TOKEN is properly configured" >> test-report.md
+            echo "2. Check repository permissions and settings" >> test-report.md
+            echo "3. Review workflow logs for specific error messages" >> test-report.md
+            echo "4. Consult the SETUP.md documentation" >> test-report.md
+          fi
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: superclaud-integration-test-${{ github.run_number }}
+          path: |
+            test-report.md
+            *.log
+          retention-days: 30
+
+      - name: Create Test Summary
+        if: always()
+        run: |
+          echo "🧪 SuperClaude Integration Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Type**: ${{ github.event.inputs.test_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Integration test completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Your SuperClaude auto-development environment is ready to use." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Integration test encountered issues." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please review the logs and troubleshoot any configuration issues." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Test Artifacts**: Check the 'Artifacts' section for detailed reports" >> $GITHUB_STEP_SUMMARY

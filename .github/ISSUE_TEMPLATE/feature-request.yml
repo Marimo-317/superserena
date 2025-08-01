@@ -1,0 +1,115 @@
+name: 🚀 Feature Request (SuperClaude Auto-Development)
+description: Request a new feature for automatic implementation via SuperClaude
+title: "[FEATURE] "
+labels: ["enhancement", "superclaud-auto"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🤖 SuperClaude Auto-Development
+        
+        This issue will be automatically processed by SuperClaude using:
+        - **SPARC Methodology** for structured development
+        - **Multi-Agent Coordination** for parallel processing
+        - **Quality Gates** for comprehensive validation
+        - **Wave System** for complex implementations
+        
+        Simply mention `@claude` to trigger automatic processing!
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 📋 Feature Description
+      description: Clearly describe the feature you want implemented
+      placeholder: |
+        Example: "Create a user authentication system with JWT tokens"
+        
+        Be specific about:
+        - What the feature should do
+        - How users will interact with it
+        - Expected behavior and outcomes
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: Define testable criteria for completion
+      placeholder: |
+        - [ ] User can register with email and password
+        - [ ] User can login and receive JWT token
+        - [ ] Protected routes validate JWT tokens
+        - [ ] Password validation follows security best practices
+        - [ ] Error handling for invalid credentials
+        - [ ] Comprehensive test coverage (>90%)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 🎯 Estimated Complexity
+      description: Help SuperClaude choose the right approach
+      options:
+        - Simple (single component/function)
+        - Moderate (multiple components, some logic)
+        - Complex (system-wide changes, architecture)
+        - Enterprise (large-scale, multiple domains)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: domains
+    attributes:
+      label: 🔧 Technical Domains
+      description: Select relevant domains (helps with agent selection)
+      options:
+        - label: Frontend/UI Components
+        - label: Backend/API Development
+        - label: Database/Data Layer
+        - label: Security/Authentication
+        - label: Performance/Optimization
+        - label: Testing/Quality Assurance
+        - label: DevOps/Infrastructure
+        - label: Documentation
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: ⚙️ Technical Requirements
+      description: Specific technical constraints or preferences
+      placeholder: |
+        - Use TypeScript
+        - Follow existing patterns in src/
+        - Must be compatible with Express.js
+        - Performance requirement: <200ms response time
+        - Security requirement: OWASP compliance
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🔍 Additional Context
+      description: Any other relevant information
+      placeholder: |
+        - Link to related issues/PRs
+        - External dependencies
+        - Business context
+        - Design considerations
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🚀 Next Steps
+        
+        1. **Review**: SuperClaude will analyze requirements automatically
+        2. **Clarification**: If needed, SuperClaude will ask questions
+        3. **Implementation**: Automatic development using SPARC methodology
+        4. **Quality Gates**: Security, performance, and testing validation
+        5. **PR Creation**: Automated pull request with implementation
+        
+        **To trigger processing**: Comment `@claude implement this feature`
