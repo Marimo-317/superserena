@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import { helloRoutes } from './routes/helloRoutes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { createRequestLogger, skipHealthChecks } from './middleware/requestLogger';
 
 class App {
   public app: Application;
@@ -28,12 +29,12 @@ class App {
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true }));
 
-    // Request logging middleware
-    this.app.use((req, res, next) => {
-      const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] ${req.method} ${req.path}`);
-      next();
-    });
+    // Request logging middleware with advanced features
+    this.app.use(createRequestLogger({
+      includeResponseTime: true,
+      includeUserAgent: true,
+      skip: skipHealthChecks(['/health'])
+    }));
   }
 
   private initializeRoutes(): void {
