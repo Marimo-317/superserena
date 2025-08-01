@@ -82,8 +82,18 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           
+          # Enhanced tool permissions for full automation
+          allowed_tools: |
+            Edit,MultiEdit,Glob,Grep,LS,Read,Write,
+            mcp__github_comment__update_claude_comment,
+            Bash(npm:*),Bash(node:*),Bash(npx:*),
+            Bash(mkdir:*),Bash(touch:*),Bash(echo:*),Bash(cat:*),
+            Bash(chmod:*),Bash(cp:*),Bash(mv:*),Bash(rm:*),
+            Bash(git:*),Bash(gh:*),
+            Bash(jest:*),Bash(eslint:*),Bash(tsc:*)
+          
           # SuperClaude Framework Integration
-          prompt: |
+          direct_prompt: |
             🚀 SuperClaude Auto-Development Pipeline Activated
             
             ## Current Context
@@ -103,19 +113,27 @@ jobs:
             4. Validate requirements with human if ambiguous
             5. Create implementation plan using TodoWrite
             
-            ### Implementation Phase (Comment/PR)
+            ### Implementation Phase (Comment/PR) - ENHANCED
             If this is a comment or PR trigger:
             1. /implement [extracted-feature] --wave-mode --validate
-            2. Tell sparc-coder to apply TDD practices
-            3. Use sparc-architect for system design validation
+            2. CREATE ACTUAL FILES using Write/Edit tools
+            3. Install dependencies: Bash(npm install <packages>)
             4. Execute multi-agent coordination:
                - sparc-security-reviewer for security audit
                - sparc-performance for optimization
                - sparc-tdd for comprehensive testing
-            5. Apply 8-step Quality Gates validation
+            5. Run tests: Bash(npm test)
+            6. Run linting: Bash(npm run lint) or Bash(npx eslint)
+            7. Commit changes: Bash(git add .) && Bash(git commit -m "message")
+            8. Push to branch: Bash(git push origin <branch>)
+            9. Create PR: Bash(gh pr create --title "..." --body "...")
             
-            ### Quality Assurance Automation
-            Always execute:
+            ### Quality Assurance Automation - ENHANCED
+            MUST execute with actual tool commands:
+            - TypeScript compilation: Bash(npx tsc --noEmit)
+            - Linting: Bash(npx eslint src/ --ext .ts,.js)
+            - Testing: Bash(npm test)
+            - Security audit: Bash(npm audit)
             - Security review via sparc-security-reviewer
             - Performance optimization via sparc-performance  
             - Test coverage validation (>90% unit, >70% integration)
@@ -138,9 +156,9 @@ jobs:
             
             🎯 Execute based on current trigger and apply full SuperClaude capabilities!
           
-          # Advanced configuration
-          max_tokens: 32000
-          temperature: 0.1
+          # Advanced configuration for enhanced automation
+          max_turns: 100
+          timeout_minutes: 90
           
       - name: Validate Build and Tests
         if: success()
