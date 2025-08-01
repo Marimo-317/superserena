@@ -1,0 +1,21 @@
+# Serena MCP Configuration
+project_name: superserena
+token_optimization: true
+semantic_analysis: true
+memory_persistence: true
+dashboard_enabled: false
+
+# Performance settings
+cache_enabled: true
+cache_ttl: 3600
+semantic_search_limit: 25000
+
+# Token optimization settings
+enable_compression: true
+smart_chunking: true
+context_aware_filtering: true
+
+# Memory settings
+memory_auto_save: true
+memory_retention_days: 30
+cross_session_persistence: true
