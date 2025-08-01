@@ -38,13 +38,19 @@ superserena/
 │   ├── user.ts                   # 認証機能付き拡張ユーザーサービス
 │   ├── api.ts                    # 認証エンドポイント付きユーザー管理API
 │   ├── password.ts               # bcryptパスワードセキュリティサービス
+│   ├── middleware/               # Express.js ミドルウェア
+│   │   ├── requestLogger.ts      # HTTPリクエストロギングミドルウェア
+│   │   └── errorHandler.ts       # エラーハンドリングミドルウェア
 │   ├── utils/                    # ユーティリティモジュール
 │   │   └── email-validator.ts    # RFC 5322準拠メール検証
 │   └── types/                    # TypeScript型定義
-│       └── auth.ts               # 認証型定義
-├── tests/                        # 包括的テストスイート（78テスト）
+│       ├── auth.ts               # 認証型定義
+│       └── logger.ts             # ロガー型定義
+├── tests/                        # 包括的テストスイート（144テスト）
 │   ├── password.test.ts          # パスワードセキュリティテスト
 │   ├── email-validation.test.ts  # メール検証テスト
+│   ├── requestLogger.test.ts     # リクエストロガーユニットテスト
+│   ├── requestLogger-integration.test.ts # リクエストロガー統合テスト
 │   └── integration.test.ts       # 統合テスト
 ├── .claude/                      # SuperSerena設定
 │   ├── agents/                   # 7つのSPARC専門エージェント
@@ -176,11 +182,19 @@ SerenaでUserインターフェースが参照される全箇所を検索
 ### テスト結果 ✅
 ```bash
 # 包括的テストスイート結果
-✅ 複数スイートで78テスト合格
+✅ 複数スイートで144テスト合格
 ✅ パスワードセキュリティテスト: 100%カバレッジ
 ✅ メール検証テスト: 39テスト合格
+✅ リクエストロガーテスト: 37テスト（ユニット + 統合）
 ✅ 統合テスト: 11テスト合格
 ✅ パフォーマンステスト: 1000メール/2ms検証
+
+# 新機能: HTTPリクエストロギングミドルウェア
+✅ Express.js統合対応
+✅ カスタマイズ可能ログ形式
+✅ IP追跡、レスポンス時間測定
+✅ エラーステータス自動分類
+✅ 本番環境対応エラーハンドリング
 ```
 
 ### テスト実行
@@ -191,6 +205,8 @@ npm test
 # 特定テストスイート
 npm test password.test.ts           # bcryptパスワードセキュリティ
 npm test email-validation.test.ts  # RFC 5322メール検証
+npm test requestLogger.test.ts      # HTTPリクエストロガーユニットテスト
+npm test requestLogger-integration.test.ts # HTTPリクエストロガー統合テスト
 npm test integration.test.ts       # システム統合テスト
 ```
 
