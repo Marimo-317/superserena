@@ -38,14 +38,21 @@ superserena/
 │   ├── user.ts                   # 認証機能付き拡張ユーザーサービス
 │   ├── api.ts                    # 認証エンドポイント付きユーザー管理API
 │   ├── password.ts               # bcryptパスワードセキュリティサービス
+│   ├── app.ts                    # Express.js メインアプリケーション
+│   ├── middleware/               # Express ミドルウェア
+│   │   ├── errorHandler.ts      # エラーハンドリングミドルウェア
+│   │   └── requestLogger.ts     # HTTPリクエストロギングミドルウェア
 │   ├── utils/                    # ユーティリティモジュール
 │   │   └── email-validator.ts    # RFC 5322準拠メール検証
 │   └── types/                    # TypeScript型定義
-│       └── auth.ts               # 認証型定義
+│       ├── auth.ts               # 認証型定義
+│       └── logger.ts             # ロギング型定義
 ├── tests/                        # 包括的テストスイート（78テスト）
 │   ├── password.test.ts          # パスワードセキュリティテスト
 │   ├── email-validation.test.ts  # メール検証テスト
-│   └── integration.test.ts       # 統合テスト
+│   ├── integration.test.ts       # 統合テスト
+│   ├── requestLogger.test.ts     # HTTPロギングユニットテスト
+│   └── requestLogger.integration.test.ts # HTTPロギング統合テスト
 ├── .claude/                      # SuperSerena設定
 │   ├── agents/                   # 7つのSPARC専門エージェント
 │   │   ├── sparc-orchestrator.md
@@ -90,7 +97,7 @@ claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena-
 
 # 4. TypeScriptプロジェクト依存関係作成
 npm init -y
-npm install typescript @types/node bcrypt @types/bcrypt jest @types/jest
+npm install typescript @types/node bcrypt @types/bcrypt jest @types/jest express @types/express cors @types/cors supertest @types/supertest
 ```
 
 ### 設定有効化
@@ -180,6 +187,7 @@ SerenaでUserインターフェースが参照される全箇所を検索
 ✅ パスワードセキュリティテスト: 100%カバレッジ
 ✅ メール検証テスト: 39テスト合格
 ✅ 統合テスト: 11テスト合格
+✅ HTTPロギングミドルウェアテスト: >90%カバレッジ
 ✅ パフォーマンステスト: 1000メール/2ms検証
 ```
 
@@ -189,9 +197,52 @@ SerenaでUserインターフェースが参照される全箇所を検索
 npm test
 
 # 特定テストスイート
-npm test password.test.ts           # bcryptパスワードセキュリティ
-npm test email-validation.test.ts  # RFC 5322メール検証
-npm test integration.test.ts       # システム統合テスト
+npm test password.test.ts                    # bcryptパスワードセキュリティ
+npm test email-validation.test.ts           # RFC 5322メール検証
+npm test integration.test.ts                # システム統合テスト
+npm test requestLogger.test.ts              # HTTPロギングユニットテスト
+npm test requestLogger.integration.test.ts  # HTTPロギング統合テスト
+```
+
+## 📊 HTTPリクエストロギングミドルウェア
+
+### 機能概要
+新しく追加されたHTTPリクエストロギングミドルウェアは以下の機能を提供します：
+
+- **基本ログ形式**: `[timestamp] method URL from IP`
+- **IP アドレス抽出**: x-forwarded-for, x-real-ip, connection.remoteAddressに対応
+- **レスポンス時間計測**: オプションでレスポンス時間とステータスコード記録
+- **スキップ機能**: ヘルスチェック等の特定エンドポイントを除外
+- **カスタマイズ**: ログ形式、ロガー関数の完全カスタマイズ対応
+- **エラーハンドリング**: 堅牢なフォーマッタエラー処理
+
+### 使用方法
+```typescript
+import { requestLogger, requestLoggerWithTiming, requestLoggerWithHealthSkip } from './middleware/requestLogger';
+
+// 基本使用方法
+app.use(requestLogger());
+
+// レスポンス時間付き
+app.use(requestLoggerWithTiming());
+
+// ヘルスチェック除外（本番推奨）
+app.use(requestLoggerWithHealthSkip());
+
+// カスタム設定
+app.use(requestLogger({
+  includeUserAgent: true,
+  includeResponseTime: true,
+  skip: (url) => url.startsWith('/internal'),
+  format: (logData) => `${logData.method} ${logData.url} - ${logData.ip}`
+}));
+```
+
+### ログ出力例
+```
+[2025-08-01T13:54:00.123Z] GET /api/users from 192.168.1.100
+[2025-08-01T13:54:00.150Z] POST /api/auth/login from 10.0.0.1 - 200 (45ms)
+[2025-08-01T13:54:00.200Z] DELETE /api/users/123 from 172.16.0.1 - 404 (12ms)
 ```
 
 ### SPARCエージェント品質ゲート
