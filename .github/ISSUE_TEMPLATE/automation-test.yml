@@ -1,0 +1,128 @@
+name: 🧪 SuperClaude Automation Test
+description: Test SuperClaude GitHub Actions automation system
+title: "[TEST] SuperClaude Automation - Request Logger Middleware"
+labels: ["automation-test", "enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🧪 SuperClaude Automation Test
+        
+        This issue will test the complete SuperClaude GitHub Actions automation system.
+        Expected outcome: Automatic implementation, testing, and PR creation.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 📋 Feature Description
+      description: Describe the feature to be implemented automatically
+      value: |
+        Create a simple HTTP request logging middleware for Express.js to test the SuperClaude automation system.
+        
+        **Core Requirements:**
+        - Log incoming HTTP requests with format: `[timestamp] method URL from IP`
+        - Integrate with existing Express app in src/app.ts
+        - Include comprehensive unit and integration tests
+        - Add proper TypeScript interfaces and error handling
+        - Update documentation with usage instructions
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What must be delivered for this automation test
+      options:
+        - label: Create `src/middleware/requestLogger.ts` with middleware implementation
+          required: false
+        - label: Create `src/types/logger.ts` with TypeScript interfaces
+          required: false
+        - label: Create comprehensive unit tests with >90% coverage
+          required: false
+        - label: Create integration test with Express app
+          required: false
+        - label: Add proper error handling and validation
+          required: false
+        - label: Include JSDoc documentation
+          required: false
+        - label: Update README with usage instructions
+          required: false
+        - label: Create automated Pull Request with detailed description
+          required: false
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 🎯 Estimated Complexity
+      description: Complexity level for this automation test
+      options:
+        - Simple (single component, basic logic)
+        - Moderate (multiple components, moderate logic)
+        - Complex (system-wide changes, advanced logic)
+      default: 0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: technical-domains
+    attributes:
+      label: 🔧 Technical Domains
+      description: Which technical areas does this test cover
+      options:
+        - label: Backend/API Development
+          required: false
+        - label: Testing/Quality Assurance
+          required: false
+        - label: TypeScript/JavaScript
+          required: false
+        - label: Express.js Middleware
+          required: false
+        - label: Git Operations
+          required: false
+        - label: CI/CD Automation
+          required: false
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: ⚙️ Technical Requirements
+      description: Specific technical requirements for this automation test
+      value: |
+        - Use TypeScript with existing project patterns
+        - Compatible with Express.js middleware pattern
+        - Follow existing code structure in src/middleware/
+        - Include proper JSDoc documentation
+        - Use existing testing framework (Jest)
+        - Maintain compatibility with current Express app setup
+        - Follow error handling patterns from existing codebase
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Automation Trigger
+        
+        **To start automation**, comment: `@claude implement this feature`
+        
+        This will trigger the SuperClaude Auto-Development Pipeline to:
+        1. 📊 Analyze requirements and create implementation plan
+        2. 💻 Generate actual TypeScript files and tests
+        3. 🧪 Run comprehensive quality checks
+        4. 🔄 Create feature branch and commit changes
+        5. 📋 Generate automated Pull Request with detailed description
+        
+        **Expected Timeline**: 5-10 minutes for complete automation
+        
+        ---
+        
+        ### 🎯 Success Metrics
+        - ✅ Real files created in repository
+        - ✅ All tests passing (unit + integration)
+        - ✅ TypeScript compilation successful
+        - ✅ ESLint checks passing
+        - ✅ Git branch and PR created automatically
+        - ✅ Comprehensive documentation generated
