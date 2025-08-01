@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import { helloRoutes } from './routes/helloRoutes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { rateLimiter } from './middleware/rateLimiter';
 
 class App {
   public app: Application;
@@ -23,6 +24,9 @@ class App {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization']
     }));
+
+    // Rate limiting middleware (before other middleware)
+    this.app.use(rateLimiter);
 
     // Body parsing middleware
     this.app.use(express.json({ limit: '10mb' }));
