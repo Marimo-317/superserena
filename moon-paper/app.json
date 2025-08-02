@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "月相壁紙 - Moon Phase Wallpaper",
+    "slug": "moon-phase-wallpaper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.superserena.moonphase",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "壁紙設定のために写真ライブラリにアクセスします。",
+        "NSCameraUsageDescription": "月の写真撮影機能で使用します。"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#1a1a2e"
+      },
+      "package": "com.superserena.moonphase",
+      "versionCode": 1,
+      "permissions": [
+        "SET_WALLPAPER",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "WAKE_LOCK"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "name": "月相壁紙アプリ",
+      "shortName": "月相壁紙",
+      "lang": "ja",
+      "backgroundColor": "#1a1a2e",
+      "themeColor": "#ffffff",
+      "description": "リアルタイムで月相を表示する美しい壁紙アプリ"
+    },
+    "plugins": [
+      "expo-wallpaper",
+      "expo-notifications",
+      "expo-sqlite",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "superserena-moon-phase"
+      }
+    }
+  }
+}

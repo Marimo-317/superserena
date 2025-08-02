@@ -1,0 +1,538 @@
+/**
+ * 天文計算ユーティリティ
+ * SuperSerena Development - SPARC Architecture
+ * Jean Meeusアルゴリズム実装
+ */
+
+import { JAPAN_TIMEZONE } from '../constants';
+
+/**
+ * ユリウス日関連の計算
+ */
+export class JulianDay {
+  /**
+   * グレゴリオ暦をユリウス日に変換
+   * @param date グレゴリオ暦の日付
+   * @returns ユリウス日
+   */
+  static fromDate(date: Date): number {
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const hour = date.getUTCHours();
+    const minute = date.getUTCMinutes();
+    const second = date.getUTCSeconds();
+    const millisecond = date.getUTCMilliseconds();
+
+    // 時刻を日の小数部に変換
+    const fractionalDay = (hour + minute / 60 + second / 3600 + millisecond / 3600000) / 24;
+    
+    let y = year;
+    let m = month;
+    
+    if (month <= 2) {
+      y -= 1;
+      m += 12;
+    }
+
+    const a = Math.floor(y / 100);
+    const b = 2 - a + Math.floor(a / 4);
+
+    const jd = Math.floor(365.25 * (y + 4716)) + 
+               Math.floor(30.6001 * (m + 1)) + 
+               day + fractionalDay + b - 1524.5;
+
+    return jd;
+  }
+
+  /**
+   * ユリウス日をグレゴリオ暦に変換
+   * @param jd ユリウス日
+   * @returns グレゴリオ暦の日付
+   */
+  static toDate(jd: number): Date {
+    const z = Math.floor(jd + 0.5);
+    const f = (jd + 0.5) - z;
+
+    let a = z;
+    if (z >= 2299161) {
+      const alpha = Math.floor((z - 1867216.25) / 36524.25);
+      a = z + 1 + alpha - Math.floor(alpha / 4);
+    }
+
+    const b = a + 1524;
+    const c = Math.floor((b - 122.1) / 365.25);
+    const d = Math.floor(365.25 * c);
+    const e = Math.floor((b - d) / 30.6001);
+
+    const day = b - d - Math.floor(30.6001 * e) + f;
+    const month = e < 14 ? e - 1 : e - 13;
+    const year = month > 2 ? c - 4716 : c - 4715;
+
+    const dayInt = Math.floor(day);
+    const timeFraction = day - dayInt;
+    
+    const hours = timeFraction * 24;
+    const hoursInt = Math.floor(hours);
+    const minutes = (hours - hoursInt) * 60;
+    const minutesInt = Math.floor(minutes);
+    const seconds = (minutes - minutesInt) * 60;
+    const secondsInt = Math.floor(seconds);
+    const milliseconds = Math.floor((seconds - secondsInt) * 1000);
+
+    return new Date(Date.UTC(year, month - 1, dayInt, hoursInt, minutesInt, secondsInt, milliseconds));
+  }
+}
+
+/**
+ * 三角関数ユーティリティ（度数法対応）
+ */
+export class TrigUtils {
+  /**
+   * 度をラジアンに変換
+   */
+  static degToRad(degrees: number): number {
+    return degrees * Math.PI / 180;
+  }
+
+  /**
+   * ラジアンを度に変換
+   */
+  static radToDeg(radians: number): number {
+    return radians * 180 / Math.PI;
+  }
+
+  /**
+   * sin（度数法）
+   */
+  static sin(degrees: number): number {
+    return Math.sin(this.degToRad(degrees));
+  }
+
+  /**
+   * cos（度数法）
+   */
+  static cos(degrees: number): number {
+    return Math.cos(this.degToRad(degrees));
+  }
+
+  /**
+   * tan（度数法）
+   */
+  static tan(degrees: number): number {
+    return Math.tan(this.degToRad(degrees));
+  }
+
+  /**
+   * arcsin（戻り値は度）
+   */
+  static asin(value: number): number {
+    return this.radToDeg(Math.asin(value));
+  }
+
+  /**
+   * arccos（戻り値は度）
+   */
+  static acos(value: number): number {
+    return this.radToDeg(Math.acos(value));
+  }
+
+  /**
+   * arctan（戻り値は度）
+   */
+  static atan(value: number): number {
+    return this.radToDeg(Math.atan(value));
+  }
+
+  /**
+   * arctan2（戻り値は度）
+   */
+  static atan2(y: number, x: number): number {
+    return this.radToDeg(Math.atan2(y, x));
+  }
+}
+
+/**
+ * 角度正規化ユーティリティ
+ */
+export class AngleUtils {
+  /**
+   * 角度を0-360度の範囲に正規化
+   */
+  static normalize360(angle: number): number {
+    let normalized = angle % 360;
+    if (normalized < 0) normalized += 360;
+    return normalized;
+  }
+
+  /**
+   * 角度を-180〜+180度の範囲に正規化
+   */
+  static normalize180(angle: number): number {
+    let normalized = angle % 360;
+    if (normalized > 180) normalized -= 360;
+    if (normalized < -180) normalized += 360;
+    return normalized;
+  }
+
+  /**
+   * 2つの角度の差を計算（-180〜+180度）
+   */
+  static difference(angle1: number, angle2: number): number {
+    return this.normalize180(angle1 - angle2);
+  }
+}
+
+/**
+ * 月軌道計算ユーティリティ
+ */
+export class LunarOrbit {
+  /**
+   * 平均黄経を計算（Jean Meeusアルゴリズム）
+   * @param T ユリウス世紀（J2000.0からの経過世紀数）
+   * @returns 平均黄経（度）
+   */
+  static meanLongitude(T: number): number {
+    return AngleUtils.normalize360(
+      218.3164477 + 
+      481267.88123421 * T - 
+      0.0015786 * T * T + 
+      T * T * T / 538841 - 
+      T * T * T * T / 65194000
+    );
+  }
+
+  /**
+   * 平均近点角を計算
+   * @param T ユリウス世紀
+   * @returns 平均近点角（度）
+   */
+  static meanAnomaly(T: number): number {
+    return AngleUtils.normalize360(
+      134.9633964 + 
+      477198.8675055 * T + 
+      0.0087414 * T * T + 
+      T * T * T / 69699 - 
+      T * T * T * T / 14712000
+    );
+  }
+
+  /**
+   * 昇交点黄経を計算
+   * @param T ユリウス世紀
+   * @returns 昇交点黄経（度）
+   */
+  static argumentOfLatitude(T: number): number {
+    return AngleUtils.normalize360(
+      93.2720950 + 
+      483202.0175233 * T - 
+      0.0036539 * T * T - 
+      T * T * T / 3526000 + 
+      T * T * T * T / 863310000
+    );
+  }
+
+  /**
+   * 軌道傾斜角による補正項を計算
+   * @param D 月の平均黄経から太陽の平均黄経を引いた値
+   * @param M 太陽の平均近点角
+   * @param M1 月の平均近点角
+   * @param F 昇交点黄経
+   * @returns 補正値（度）
+   */
+  static periodicTerms(D: number, M: number, M1: number, F: number): number {
+    // 主要な周期項（Jean Meeusアルゴリズムから抜粋）
+    const terms = [
+      { d: 0, m: 0, m1: 1, f: 0, coeff: 6.288774 },
+      { d: 2, m: 0, m1: -1, f: 0, coeff: 1.274027 },
+      { d: 2, m: 0, m1: 0, f: 0, coeff: 0.658314 },
+      { d: 0, m: 0, m1: 2, f: 0, coeff: 0.213618 },
+      { d: 0, m: 1, m1: 0, f: 0, coeff: -0.185116 },
+      { d: 0, m: 0, m1: 0, f: 2, coeff: -0.114332 },
+      { d: 2, m: 0, m1: -2, f: 0, coeff: 0.058793 },
+      { d: 2, m: -1, m1: -1, f: 0, coeff: 0.057066 },
+      { d: 2, m: 0, m1: 1, f: 0, coeff: 0.053322 },
+      { d: 2, m: -1, m1: 0, f: 0, coeff: 0.045758 },
+    ];
+
+    let correction = 0;
+    for (const term of terms) {
+      const argument = term.d * D + term.m * M + term.m1 * M1 + term.f * F;
+      correction += term.coeff * TrigUtils.sin(argument);
+    }
+
+    return correction;
+  }
+}
+
+/**
+ * 太陽軌道計算ユーティリティ
+ */
+export class SolarOrbit {
+  /**
+   * 太陽の平均黄経を計算
+   * @param T ユリウス世紀
+   * @returns 平均黄経（度）
+   */
+  static meanLongitude(T: number): number {
+    return AngleUtils.normalize360(
+      280.4664567 + 
+      36000.76982779 * T + 
+      0.0003032028 * T * T + 
+      T * T * T / 49931821
+    );
+  }
+
+  /**
+   * 太陽の平均近点角を計算
+   * @param T ユリウス世紀
+   * @returns 平均近点角（度）
+   */
+  static meanAnomaly(T: number): number {
+    return AngleUtils.normalize360(
+      357.5291092 + 
+      35999.0502909 * T - 
+      0.0001559 * T * T - 
+      0.00000048 * T * T * T
+    );
+  }
+
+  /**
+   * 太陽の真の黄経を計算
+   * @param T ユリウス世紀
+   * @returns 真の黄経（度）
+   */
+  static trueLongitude(T: number): number {
+    const L0 = this.meanLongitude(T);
+    const M = this.meanAnomaly(T);
+    
+    // 中心差の主要項
+    const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * TrigUtils.sin(M) +
+              (0.019993 - 0.000101 * T) * TrigUtils.sin(2 * M) +
+              0.000289 * TrigUtils.sin(3 * M);
+    
+    return AngleUtils.normalize360(L0 + C);
+  }
+}
+
+/**
+ * タイムゾーン変換ユーティリティ
+ */
+export class TimezoneUtils {
+  /**
+   * 日本時間をUTCに変換
+   * @param jstDate 日本時間
+   * @returns UTC時間
+   */
+  static jstToUtc(jstDate: Date): Date {
+    return new Date(jstDate.getTime() - 9 * 60 * 60 * 1000);
+  }
+
+  /**
+   * UTCを日本時間に変換
+   * @param utcDate UTC時間
+   * @returns 日本時間
+   */
+  static utcToJst(utcDate: Date): Date {
+    return new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+  }
+
+  /**
+   * 日付を指定タイムゾーンで表現
+   * @param date 日付
+   * @param timezone タイムゾーン識別子
+   * @returns タイムゾーン情報付きの日付文字列
+   */
+  static formatInTimezone(date: Date, timezone: string = JAPAN_TIMEZONE): string {
+    return date.toLocaleString('ja-JP', { 
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
+}
+
+/**
+ * 精度検証ユーティリティ
+ */
+export class AccuracyUtils {
+  /**
+   * 2つの日時の差を日数で計算
+   * @param date1 日時1
+   * @param date2 日時2
+   * @returns 差（日数）
+   */
+  static daysDifference(date1: Date, date2: Date): number {
+    return Math.abs(date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24);
+  }
+
+  /**
+   * 精度許容範囲内かチェック
+   * @param calculated 計算値
+   * @param actual 実際値
+   * @param tolerance 許容誤差（日数）
+   * @returns 許容範囲内かどうか
+   */
+  static isWithinTolerance(calculated: Date, actual: Date, tolerance: number): boolean {
+    return this.daysDifference(calculated, actual) <= tolerance;
+  }
+
+  /**
+   * 角度の精度を検証
+   * @param calculated 計算値（度）
+   * @param actual 実際値（度）
+   * @param tolerance 許容誤差（度）
+   * @returns 許容範囲内かどうか
+   */
+  static isAngleWithinTolerance(calculated: number, actual: number, tolerance: number): boolean {
+    const diff = Math.abs(AngleUtils.difference(calculated, actual));
+    return diff <= tolerance;
+  }
+}
+
+/**
+ * 計算最適化ユーティリティ
+ */
+export class OptimizationUtils {
+  private static cache = new Map<string, any>();
+
+  /**
+   * 計算結果をキャッシュ
+   * @param key キャッシュキー
+   * @param calculator 計算関数
+   * @returns 計算結果
+   */
+  static cached<T>(key: string, calculator: () => T): T {
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
+    }
+
+    const result = calculator();
+    this.cache.set(key, result);
+    return result;
+  }
+
+  /**
+   * キャッシュをクリア
+   */
+  static clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * 高速べき乗計算
+   * @param base 底
+   * @param exponent 指数
+   * @returns べき乗結果
+   */
+  static fastPower(base: number, exponent: number): number {
+    if (exponent === 0) return 1;
+    if (exponent === 1) return base;
+    
+    if (exponent % 2 === 0) {
+      const half = this.fastPower(base, exponent / 2);
+      return half * half;
+    } else {
+      return base * this.fastPower(base, exponent - 1);
+    }
+  }
+
+  /**
+   * 数値の有効性チェック
+   * @param value チェックする数値
+   * @returns 有効かどうか
+   */
+  static isValidNumber(value: number): boolean {
+    return Number.isFinite(value) && !Number.isNaN(value);
+  }
+}
+
+/**
+ * 月相計算の核となるアルゴリズム実装
+ */
+export class MeusAlgorithm {
+  /**
+   * 指定日時での月相位相角を計算（Jean Meeusアルゴリズム）
+   * @param jd ユリウス日
+   * @returns 位相角（0-360度、0度=新月、180度=満月）
+   */
+  static calculatePhaseAngle(jd: number): number {
+    // J2000.0からの経過世紀数
+    const T = (jd - 2451545.0) / 36525;
+
+    // 月の軌道要素
+    const L = LunarOrbit.meanLongitude(T); // 月の平均黄経
+    const M = LunarOrbit.meanAnomaly(T);   // 月の平均近点角
+    const F = LunarOrbit.argumentOfLatitude(T); // 昇交点黄経
+
+    // 太陽の軌道要素
+    const L_sun = SolarOrbit.meanLongitude(T); // 太陽の平均黄経
+    const M_sun = SolarOrbit.meanAnomaly(T);   // 太陽の平均近点角
+
+    // 月と太陽の黄経差（位相角の基礎）
+    const D = AngleUtils.normalize360(L - L_sun);
+
+    // 簡略化されたJean Meeusアルゴリズム
+    // 基準新月からの経過日数を使用した簡易計算
+    const daysSinceReference = jd - 2451549.884722222; // 2000年1月6日18:14 JSTの新月の正確なユリウス日
+    const syndicMonthLength = 29.530588861;
+    const cycles = daysSinceReference / syndicMonthLength;
+    const phaseInCycle = (cycles - Math.floor(cycles)) * 360;
+
+    return AngleUtils.normalize360(phaseInCycle);
+  }
+
+  /**
+   * 位相角から月齢を計算
+   * @param phaseAngle 位相角（度）
+   * @param syndicMonth 朔望月の長さ（日）
+   * @returns 月齢（日）
+   */
+  static phaseAngleToMoonAge(phaseAngle: number, syndicMonth: number): number {
+    return (phaseAngle / 360) * syndicMonth;
+  }
+
+  /**
+   * 次の主要月相日時を計算
+   * @param fromJd 基準ユリウス日
+   * @param phaseType 月相タイプ（0=新月, 1=上弦, 2=満月, 3=下弦）
+   * @returns 次の月相のユリウス日
+   */
+  static nextMajorPhase(fromJd: number, phaseType: 0 | 1 | 2 | 3): number {
+    // 簡略化された計算（基準新月からの周期計算）
+    const referenceNewMoon = 2451549.884722222; // 2000年1月6日18:14 JSTの新月の正確なユリウス日
+    const syndicMonth = 29.530588861;
+    
+    // 基準からの経過朔望月数
+    const cyclesSinceReference = (fromJd - referenceNewMoon) / syndicMonth;
+    let nextCycle = Math.floor(cyclesSinceReference) + 1;
+    
+    // 目標の月相タイプまでの日数計算
+    const phaseOffsets = [0, 7.38, 14.77, 22.15]; // 新月、上弦、満月、下弦
+    const targetOffset = phaseOffsets[phaseType];
+    
+    // 現在の月相周期内での位置
+    const currentPosition = (cyclesSinceReference - Math.floor(cyclesSinceReference)) * syndicMonth;
+    
+    // 次の目標月相のユリウス日計算
+    let nextPhaseJd;
+    if (currentPosition < targetOffset) {
+      // 現在の周期内
+      nextPhaseJd = referenceNewMoon + Math.floor(cyclesSinceReference) * syndicMonth + targetOffset;
+    } else {
+      // 次の周期
+      nextPhaseJd = referenceNewMoon + nextCycle * syndicMonth + targetOffset;
+    }
+    
+    // 基準日より後であることを確認
+    if (nextPhaseJd <= fromJd) {
+      nextPhaseJd += syndicMonth;
+    }
+    
+    return nextPhaseJd;
+  }
+}
