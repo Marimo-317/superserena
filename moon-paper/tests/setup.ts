@@ -4,7 +4,7 @@
  */
 
 // グローバルテスト設定
-global.gc = global.gc || (() => {});
+global.gc = global.gc || (() => Promise.resolve());
 
 // タイムゾーン設定
 process.env.TZ = 'Asia/Tokyo';

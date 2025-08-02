@@ -26,13 +26,14 @@ import {
   AccuracyUtils,
   OptimizationUtils 
 } from '../../shared/utils/astronomical-utils';
+import { isMoonPhase } from '../../shared/utils/type-guards';
 
 /**
  * Jean Meeusアルゴリズムによる高精度月相計算器
  */
 export class MoonPhaseCalculator implements IMoonPhaseCalculator {
   private readonly options: Required<MoonCalculatorOptions>;
-  private readonly cache = new Map<string, any>();
+  private readonly cache = new Map<string, MoonPhase | any>();
   private readonly performanceStats = { calculations: 0, cacheHits: 0, totalTime: 0 };
 
   constructor(options: MoonCalculatorOptions = {}) {
@@ -56,7 +57,7 @@ export class MoonPhaseCalculator implements IMoonPhaseCalculator {
     try {
       // キャッシュチェック
       if (this.options.enableCache) {
-        const cached = this.getCachedResult(date, 'moonPhase');
+        const cached = this.getCachedResult<MoonPhase>(date, 'moonPhase');
         if (cached) return cached;
       }
 
@@ -308,7 +309,14 @@ export class MoonPhaseCalculator implements IMoonPhaseCalculator {
    */
   private getCachedResult<T>(date: Date, operation: string): T | null {
     const key = this.generateCacheKey(date, operation);
-    return this.cache.get(key) || null;
+    const cached = this.cache.get(key);
+    
+    // MoonPhase型の場合は型ガードでチェック
+    if (operation === 'moonPhase' && cached) {
+      return isMoonPhase(cached) ? cached as T : null;
+    }
+    
+    return cached || null;
   }
 
   /**
