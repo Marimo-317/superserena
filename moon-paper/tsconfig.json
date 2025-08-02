@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "./dist",
+    "jsx": "react-native",
+    "module": "CommonJS",
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["src/core/*"],
+      "@shared/*": ["src/shared/*"],
+      "@mobile/*": ["src/mobile/*"],
+      "@server/*": ["src/server/*"],
+      "@assets/*": ["assets/*"]
+    },
+    "types": ["jest", "node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/core/**/*",
+    "src/shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "tests",
+    "benchmarks",
+    "src/security/**/*",
+    "src/mobile/**/*",
+    "src/server/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

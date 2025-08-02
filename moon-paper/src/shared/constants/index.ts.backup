@@ -1,0 +1,183 @@
+/**
+ * 月相壁紙アプリ定数定義
+ * SuperSerena Development - SPARC Architecture
+ */
+
+// 月相計算関連定数
+export const MOON_CONSTANTS = {
+  /** 朔望月の長さ（日） */
+  SYNODIC_MONTH: 29.530588861,
+  /** 基準新月の日付（ユリウス日） */
+  KNOWN_NEW_MOON_JD: 2451549.884722222, // 2000年1月6日18:14 JSTの新月の正確なユリウス日
+  /** 計算精度許容誤差（日） */
+  CALCULATION_TOLERANCE: 0.5,
+} as const;
+
+// 月相名称定義（日本語）
+export const MOON_PHASE_NAMES = {
+  ja: {
+    NEW_MOON: '新月',
+    WAXING_CRESCENT: '三日月',
+    FIRST_QUARTER: '上弦の月',
+    WAXING_GIBBOUS: '十三夜月',
+    FULL_MOON: '満月',
+    WANING_GIBBOUS: '十八夜月',
+    LAST_QUARTER: '下弦の月',
+    WANING_CRESCENT: '有明月',
+  },
+  en: {
+    NEW_MOON: 'New Moon',
+    WAXING_CRESCENT: 'Waxing Crescent',
+    FIRST_QUARTER: 'First Quarter',
+    WAXING_GIBBOUS: 'Waxing Gibbous',
+    FULL_MOON: 'Full Moon',
+    WANING_GIBBOUS: 'Waning Gibbous',
+    LAST_QUARTER: 'Last Quarter',
+    WANING_CRESCENT: 'Waning Crescent',
+  },
+} as const;
+
+// テーマID定義
+export const THEME_IDS = {
+  REALISTIC_CLASSIC: 'realistic-classic',
+  MINIMAL_MODERN: 'minimal-modern',
+  JAPANESE_TRADITIONAL: 'japanese-traditional',
+  JAPANESE_SEASONAL: 'japanese-seasonal',
+  ARTISTIC_VAN_GOGH: 'artistic-van-gogh',
+  MINIMAL_DARK: 'minimal-dark',
+} as const;
+
+// パフォーマンス基準
+export const PERFORMANCE_TARGETS = {
+  /** アプリ起動時間上限（ミリ秒） */
+  MAX_STARTUP_TIME: 2000,
+  /** 月相計算時間上限（ミリ秒） */
+  MAX_CALCULATION_TIME: 100,
+  /** 壁紙更新時間上限（ミリ秒） */
+  MAX_WALLPAPER_UPDATE_TIME: 500,
+  /** メモリ使用量上限（MB） */
+  MAX_MEMORY_USAGE: 50,
+  /** 1日あたりバッテリー消費上限（%） */
+  MAX_DAILY_BATTERY_USAGE: 2,
+} as const;
+
+// 日本の季節定義
+export const JAPANESE_SEASONS = {
+  SPRING: {
+    name: '春',
+    nameEn: 'Spring',
+    months: [3, 4, 5],
+    colors: ['#FFC0CB', '#FFB6C1', '#98FB98'], // 桜色、薄紅、若葉色
+    elements: ['桜', '梅', '菜の花', '若葉'],
+  },
+  SUMMER: {
+    name: '夏',
+    nameEn: 'Summer',
+    months: [6, 7, 8],
+    colors: ['#00BFFF', '#87CEEB', '#FFD700'], // 空色、空青、向日葵色
+    elements: ['紫陽花', '花火', '風鈴', '向日葵'],
+  },
+  AUTUMN: {
+    name: '秋',
+    nameEn: 'Autumn',
+    months: [9, 10, 11],
+    colors: ['#CD853F', '#D2691E', '#B22222'], // 茶色、紅葉色、深紅
+    elements: ['紅葉', '月見', 'すすき', '柿'],
+  },
+  WINTER: {
+    name: '冬',
+    nameEn: 'Winter',
+    months: [12, 1, 2],
+    colors: ['#FFFFFF', '#E6E6FA', '#4169E1'], // 雪白、薄紫、瑠璃色
+    elements: ['雪', '梅', '椿', '松'],
+  },
+} as const;
+
+// アプリ設定デフォルト値
+export const DEFAULT_SETTINGS = {
+  wallpaper: {
+    selectedThemeId: THEME_IDS.JAPANESE_TRADITIONAL,
+    autoUpdate: true,
+    updateInterval: 24, // 24時間
+    setHomeScreen: true,
+    setLockScreen: true,
+    batteryOptimization: true,
+  },
+  notifications: {
+    enabled: true,
+    fullMoonNotification: true,
+    newMoonNotification: false,
+    notificationTime: '20:00',
+    sound: 'default',
+    vibration: true,
+  },
+  app: {
+    language: 'ja' as const,
+    darkMode: false,
+    isFirstLaunch: true,
+    termsAccepted: false,
+    privacyAccepted: false,
+  },
+} as const;
+
+// API エンドポイント
+export const API_ENDPOINTS = {
+  BASE_URL: 'http://localhost:3000/api',
+  MOON_PHASE: '/moon-phase',
+  THEMES: '/themes',
+  SETTINGS: '/settings',
+  NOTIFICATIONS: '/notifications',
+} as const;
+
+// ストレージキー
+export const STORAGE_KEYS = {
+  WALLPAPER_SETTINGS: 'wallpaper_settings',
+  NOTIFICATION_SETTINGS: 'notification_settings',
+  APP_SETTINGS: 'app_settings',
+  LAST_MOON_PHASE: 'last_moon_phase',
+  INSTALLED_THEMES: 'installed_themes',
+  USER_PREFERENCES: 'user_preferences',
+} as const;
+
+// エラーコード
+export const ERROR_CODES = {
+  // 月相計算エラー
+  MOON_CALCULATION_FAILED: 'MOON_CALC_001',
+  INVALID_DATE_INPUT: 'MOON_CALC_002',
+  
+  // 壁紙設定エラー
+  WALLPAPER_SET_FAILED: 'WALLPAPER_001',
+  THEME_NOT_FOUND: 'WALLPAPER_002',
+  PERMISSION_DENIED: 'WALLPAPER_003',
+  
+  // ストレージエラー
+  STORAGE_READ_FAILED: 'STORAGE_001',
+  STORAGE_WRITE_FAILED: 'STORAGE_002',
+  STORAGE_CORRUPTED: 'STORAGE_003',
+  
+  // ネットワークエラー
+  NETWORK_UNAVAILABLE: 'NETWORK_001',
+  API_TIMEOUT: 'NETWORK_002',
+  SERVER_ERROR: 'NETWORK_003',
+  
+  // システムエラー
+  PERMISSION_REQUIRED: 'SYSTEM_001',
+  BATTERY_LOW: 'SYSTEM_002',
+  MEMORY_INSUFFICIENT: 'SYSTEM_003',
+} as const;
+
+// 日本のタイムゾーン
+export const JAPAN_TIMEZONE = 'Asia/Tokyo';
+
+// アプリケーション情報
+export const APP_INFO = {
+  NAME: '月相壁紙',
+  NAME_EN: 'Moon Phase Wallpaper',
+  VERSION: '1.0.0',
+  BUILD_NUMBER: 1,
+  DEVELOPER: 'SuperSerena Development Team',
+  COPYRIGHT: '© 2025 SuperSerena. All rights reserved.',
+  SUPPORT_EMAIL: 'support@superserena.dev',
+  PRIVACY_POLICY_URL: 'https://superserena.dev/privacy',
+  TERMS_OF_SERVICE_URL: 'https://superserena.dev/terms',
+} as const;

@@ -68,17 +68,17 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           
-      # Grant elevated permissions to the runner
-      - name: Setup enhanced permissions
+      # Configure secure environment for automation
+      - name: Setup secure environment
         run: |
           # Ensure proper git configuration
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Set executable permissions for enhanced operations
-          chmod +x /usr/bin/*
+          # Set safe permissions for project files only
+          find . -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
           
-          echo "Enhanced permissions configured for full automation"
+          echo "Secure environment configured for development automation"
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
