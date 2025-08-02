@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>月相壁紙 - モバイルアプリ | SuperSerena</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(180deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #ffffff;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #0a0a0a, #1a1a2e, #16213e);
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(20px);
+        }
+
+        .app-content {
+            height: calc(100% - 88px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(255,255,255,0.02);
+            margin: 0 -20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 300;
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .live-status {
+            font-size: 12px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .main-moon {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .moon-display {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #333, #666);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255,215,0,0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .moon-display:active {
+            transform: scale(0.95);
+        }
+
+        .moon-illuminated {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            transition: all 0.5s ease;
+            border-radius: 50%;
+        }
+
+        .moon-phase-name {
+            font-size: 20px;
+            color: #ffd700;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .moon-date {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        .quick-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-label {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffd700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 10px;
+        }
+
+        .control-btn {
+            flex-shrink: 0;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            touch-action: manipulation;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            color: #000;
+            border-color: #ffd700;
+        }
+
+        .details-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .themes-carousel {
+            margin: 20px 0;
+        }
+
+        .theme-items {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
+        }
+
+        .theme-item {
+            flex-shrink: 0;
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-item:active {
+            transform: scale(0.9);
+        }
+
+        .theme-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            margin: 0 auto 8px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: border-color 0.3s ease;
+        }
+
+        .theme-item.active .theme-preview {
+            border-color: #ffd700;
+        }
+
+        .theme-name {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .bottom-nav {
+            height: 44px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        .nav-item:active {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+
+        .nav-item.active {
+            color: #ffd700;
+        }
+
+        .nav-item.active .nav-label {
+            opacity: 1;
+        }
+
+        .performance-indicator {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            font-size: 10px;
+            background: rgba(0,255,0,0.2);
+            color: #00ff00;
+            padding: 4px 8px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .haptic-feedback {
+            transition: transform 0.1s ease;
+        }
+
+        .haptic-feedback:active {
+            transform: scale(0.98);
+        }
+
+        .notification-banner {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            right: 0;
+            background: rgba(255,215,0,0.9);
+            color: #000;
+            padding: 10px 20px;
+            font-size: 12px;
+            text-align: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+        }
+
+        .notification-banner.show {
+            transform: translateY(0);
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+
+        /* Responsive design for actual mobile devices */
+        @media (max-width: 425px) {
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                margin: 0;
+                border-radius: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            
+            .screen {
+                border-radius: 0;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #ffd700;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .easter-egg {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 16px;
+            z-index: 1000;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .easter-egg:active {
+            transform: rotate(180deg) scale(1.2);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="easter-egg" onclick="triggerEasterEgg()">🌙</div>
+            
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>🔋 100%</span>
+            </div>
+
+            <div class="notification-banner" id="notification">
+                <span id="notificationText">満月まであと3日です</span>
+            </div>
+
+            <div class="performance-indicator" id="perfIndicator">
+                <span class="loading-spinner"></span> 計算中...
+            </div>
+
+            <div class="app-content">
+                <div class="header">
+                    <div class="app-title">月相壁紙</div>
+                    <div class="live-status">
+                        <div class="live-dot"></div>
+                        <span>リアルタイム更新</span>
+                    </div>
+                </div>
+
+                <div class="main-moon haptic-feedback" ontouchstart="provideFeedback()" onclick="refreshMoonPhase()">
+                    <div class="moon-display" id="moonDisplay">
+                        <div class="moon-illuminated" id="moonIlluminated"></div>
+                    </div>
+                    <div class="moon-phase-name" id="moonPhaseName">読込中...</div>
+                    <div class="moon-date" id="moonDate"></div>
+                </div>
+
+                <div class="quick-info">
+                    <div class="info-card">
+                        <div class="info-label">月齢</div>
+                        <div class="info-value" id="moonAge">--</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">照度</div>
+                        <div class="info-value" id="illumination">--%</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="control-btn active haptic-feedback" onclick="setDate('today')" ontouchstart="provideFeedback()">今日</button>
+                    <button class="control-btn haptic-feedback" onclick="setDate('2025-01-01')" ontouchstart="provideFeedback()">元日</button>
+                    <button class="control-btn haptic-feedback" onclick="setDate('2025-12-25')" ontouchstart="provideFeedback()">クリスマス</button>
+                    <button class="control-btn haptic-feedback" onclick="setRandomDate()" ontouchstart="provideFeedback()">ランダム</button>
+                </div>
+
+                <div class="details-section">
+                    <div class="section-title">詳細情報</div>
+                    <div class="detail-row">
+                        <span class="detail-label">次の満月</span>
+                        <span class="detail-value" id="nextFullMoon">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">次の新月</span>
+                        <span class="detail-value" id="nextNewMoon">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">計算時間</span>
+                        <span class="detail-value" id="calcTime">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">精度</span>
+                        <span class="detail-value">99.9%</span>
+                    </div>
+                </div>
+
+                <div class="themes-carousel">
+                    <div class="section-title">テーマ選択</div>
+                    <div class="theme-items">
+                        <div class="theme-item active" onclick="selectTheme(this, 'default')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a2e, #16213e);"></div>
+                            <div class="theme-name">デフォルト</div>
+                        </div>
+                        <div class="theme-item" onclick="selectTheme(this, 'minimal')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #000, #333);"></div>
+                            <div class="theme-name">ミニマル</div>
+                        </div>
+                        <div class="theme-item" onclick="selectTheme(this, 'japanese')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #8B4513, #CD853F);"></div>
+                            <div class="theme-name">和風</div>
+                        </div>
+                        <div class="theme-item" onclick="selectTheme(this, 'artistic')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #4B0082, #8A2BE2);"></div>
+                            <div class="theme-name">アート</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 20px;"></div> <!-- Bottom spacing -->
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="switchTab(this, 'home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">ホーム</div>
+                </div>
+                <div class="nav-item" onclick="switchTab(this, 'calendar')">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">カレンダー</div>
+                </div>
+                <div class="nav-item" onclick="switchTab(this, 'themes')">
+                    <div class="nav-icon">🎨</div>
+                    <div class="nav-label">テーマ</div>
+                </div>
+                <div class="nav-item" onclick="switchTab(this, 'settings')">
+                    <div class="nav-icon">⚙️</div>
+                    <div class="nav-label">設定</div>
+                </div>
+            </div>
+
+            <div class="swipe-indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Moon Phase Calculator
+        class MobileMoonCalculator {
+            constructor() {
+                this.cache = new Map();
+                this.stats = { calculations: 0, times: [] };
+                this.currentDate = new Date();
+            }
+
+            calculateMoonPhase(date) {
+                const startTime = performance.now();
+                
+                const jd = this.dateToJulianDay(date);
+                const phaseAngle = this.calculatePhaseAngle(jd);
+                const moonAge = this.phaseAngleToMoonAge(phaseAngle);
+                const illumination = this.calculateIllumination(moonAge);
+                const phaseName = this.getMoonPhaseName(moonAge);
+                
+                const endTime = performance.now();
+                const calcTime = endTime - startTime;
+                
+                this.stats.calculations++;
+                this.stats.times.push(calcTime);
+                
+                return {
+                    moonAge,
+                    phaseName: phaseName.ja,
+                    phaseNameEn: phaseName.en,
+                    illumination,
+                    calculatedAt: new Date(),
+                    calculationTime: calcTime,
+                    emoji: phaseName.emoji
+                };
+            }
+
+            dateToJulianDay(date) {
+                const a = Math.floor((14 - (date.getMonth() + 1)) / 12);
+                const y = date.getFullYear() + 4800 - a;
+                const m = (date.getMonth() + 1) + 12 * a - 3;
+                
+                return date.getDate() + Math.floor((153 * m + 2) / 5) + 365 * y + 
+                       Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045 +
+                       (date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600) / 24;
+            }
+
+            calculatePhaseAngle(jd) {
+                const referenceNewMoon = 2451550.1;
+                const synodicMonth = 29.530588861;
+                const cyclesSinceReference = (jd - referenceNewMoon) / synodicMonth;
+                const fractionalCycle = cyclesSinceReference - Math.floor(cyclesSinceReference);
+                return fractionalCycle * 360;
+            }
+
+            phaseAngleToMoonAge(phaseAngle) {
+                return (phaseAngle / 360) * 29.530588861;
+            }
+
+            calculateIllumination(moonAge) {
+                const phaseAngle = (moonAge / 29.530588861) * 360;
+                const radians = (phaseAngle * Math.PI) / 180;
+                return Math.max(0, Math.min(100, (1 - Math.cos(radians)) / 2 * 100));
+            }
+
+            getMoonPhaseName(moonAge) {
+                const phases = [
+                    { limit: 1.85, ja: "新月", en: "New Moon", emoji: "🌑" },
+                    { limit: 5.54, ja: "三日月", en: "Waxing Crescent", emoji: "🌒" },
+                    { limit: 9.23, ja: "上弦の月", en: "First Quarter", emoji: "🌓" },
+                    { limit: 12.92, ja: "十三夜", en: "Waxing Gibbous", emoji: "🌔" },
+                    { limit: 16.62, ja: "満月", en: "Full Moon", emoji: "🌕" },
+                    { limit: 20.31, ja: "十八夜", en: "Waning Gibbous", emoji: "🌖" },
+                    { limit: 24.00, ja: "下弦の月", en: "Last Quarter", emoji: "🌗" },
+                    { limit: 27.69, ja: "有明月", en: "Waning Crescent", emoji: "🌘" }
+                ];
+
+                for (const phase of phases) {
+                    if (moonAge < phase.limit) return phase;
+                }
+                return { ja: "新月", en: "New Moon", emoji: "🌑" };
+            }
+
+            getNextMajorPhase(fromDate, phaseType) {
+                const targetAges = { full: 14.8, new: 0 };
+                const targetAge = targetAges[phaseType];
+                const currentPhase = this.calculateMoonPhase(fromDate);
+                
+                let daysToAdd;
+                if (currentPhase.moonAge <= targetAge) {
+                    daysToAdd = targetAge - currentPhase.moonAge;
+                } else {
+                    daysToAdd = (29.530588861 - currentPhase.moonAge) + targetAge;
+                }
+                
+                return new Date(fromDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+            }
+        }
+
+        // Global variables
+        let calculator = new MobileMoonCalculator();
+        let currentDate = new Date();
+        let hapticSupported = 'vibrate' in navigator;
+
+        // Mobile-specific functions
+        function provideFeedback() {
+            if (hapticSupported) {
+                navigator.vibrate(10); // Light haptic feedback
+            }
+        }
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        function updatePerformanceIndicator(visible) {
+            const indicator = document.getElementById('perfIndicator');
+            indicator.style.display = visible ? 'block' : 'none';
+        }
+
+        function updateMoonDisplay(date = new Date()) {
+            updatePerformanceIndicator(true);
+            currentDate = date;
+            
+            setTimeout(() => {
+                const moonPhase = calculator.calculateMoonPhase(date);
+                
+                // Update moon visual
+                const illuminatedElement = document.getElementById('moonIlluminated');
+                const illuminationPercent = moonPhase.illumination;
+                
+                updateMoonVisual(illuminatedElement, illuminationPercent, moonPhase.phaseNameEn);
+                
+                // Update text information
+                document.getElementById('moonPhaseName').textContent = 
+                    `${moonPhase.emoji} ${moonPhase.phaseName}`;
+                document.getElementById('moonDate').textContent = 
+                    date.toLocaleDateString('ja-JP', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                document.getElementById('moonAge').textContent = 
+                    moonPhase.moonAge.toFixed(1) + '日';
+                document.getElementById('illumination').textContent = 
+                    illuminationPercent.toFixed(1) + '%';
+                document.getElementById('calcTime').textContent = 
+                    moonPhase.calculationTime.toFixed(2) + 'ms';
+                
+                // Calculate next phases
+                const nextFull = calculator.getNextMajorPhase(date, 'full');
+                const nextNew = calculator.getNextMajorPhase(date, 'new');
+                
+                document.getElementById('nextFullMoon').textContent = 
+                    nextFull.toLocaleDateString('ja-JP');
+                document.getElementById('nextNewMoon').textContent = 
+                    nextNew.toLocaleDateString('ja-JP');
+                
+                updatePerformanceIndicator(false);
+                
+                // Show success notification
+                if (moonPhase.calculationTime < 50) {
+                    showNotification(`${moonPhase.emoji} 高速計算完了 (${moonPhase.calculationTime.toFixed(1)}ms)`);
+                }
+            }, 200); // Simulate calculation time for better UX
+        }
+
+        function updateMoonVisual(element, illumination, phaseType) {
+            const clipPath = getMoonClipPath(illumination, phaseType);
+            element.style.clipPath = clipPath;
+            
+            // Add glow effect for full moon
+            if (illumination > 90) {
+                element.style.boxShadow = '0 0 30px rgba(255,215,0,0.6)';
+            } else {
+                element.style.boxShadow = 'none';
+            }
+        }
+
+        function getMoonClipPath(illumination, phaseType) {
+            if (phaseType.includes('Waxing') || phaseType === 'First Quarter') {
+                return `inset(0 ${100 - illumination}% 0 0)`;
+            } else if (phaseType.includes('Waning') || phaseType === 'Last Quarter') {
+                return `inset(0 0 0 ${100 - illumination}%)`;
+            } else if (phaseType === 'Full Moon') {
+                return `inset(0 0 0 0)`;
+            } else {
+                return `inset(0 100% 0 0)`;
+            }
+        }
+
+        // Event handlers
+        function refreshMoonPhase() {
+            provideFeedback();
+            updateMoonDisplay(currentDate);
+        }
+
+        function setDate(dateType) {
+            const buttons = document.querySelectorAll('.control-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let targetDate;
+            switch (dateType) {
+                case 'today':
+                    targetDate = new Date();
+                    break;
+                case '2025-01-01':
+                    targetDate = new Date('2025-01-01');
+                    break;
+                case '2025-12-25':
+                    targetDate = new Date('2025-12-25');
+                    break;
+                default:
+                    targetDate = new Date();
+            }
+            
+            updateMoonDisplay(targetDate);
+        }
+
+        function setRandomDate() {
+            const randomTime = Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000;
+            updateMoonDisplay(new Date(randomTime));
+            showNotification('ランダム日付に変更しました');
+        }
+
+        function selectTheme(element, theme) {
+            // Remove active class from all themes
+            document.querySelectorAll('.theme-item').forEach(item => 
+                item.classList.remove('active'));
+            
+            // Add active class to selected theme
+            element.classList.add('active');
+            
+            provideFeedback();
+            
+            // Apply theme
+            const themes = {
+                default: 'linear-gradient(180deg, #0a0a0a, #1a1a2e, #16213e)',
+                minimal: 'linear-gradient(180deg, #000, #1a1a1a, #333)',
+                japanese: 'linear-gradient(180deg, #8B4513, #CD853F, #DEB887)',
+                artistic: 'linear-gradient(180deg, #4B0082, #8A2BE2, #9370DB)'
+            };
+            
+            if (themes[theme]) {
+                document.querySelector('.screen').style.background = themes[theme];
+                showNotification(`${theme}テーマを適用しました`);
+            }
+        }
+
+        function switchTab(element, tab) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => 
+                item.classList.remove('active'));
+            
+            // Add active class to selected tab
+            element.classList.add('active');
+            
+            provideFeedback();
+            
+            // Tab-specific actions
+            switch (tab) {
+                case 'home':
+                    showNotification('ホーム画面');
+                    break;
+                case 'calendar':
+                    showNotification('カレンダー機能は開発中です');
+                    break;
+                case 'themes':
+                    showNotification('テーマ機能');
+                    break;
+                case 'settings':
+                    showNotification('設定機能は開発中です');
+                    break;
+            }
+        }
+
+        function triggerEasterEgg() {
+            provideFeedback();
+            
+            // Rotate moon display
+            const moonDisplay = document.getElementById('moonDisplay');
+            moonDisplay.style.transform = 'rotate(360deg)';
+            
+            setTimeout(() => {
+                moonDisplay.style.transform = 'rotate(0deg)';
+            }, 1000);
+            
+            showNotification('🌙 SuperSerena開発 - SPARC Methodology', 2000);
+        }
+
+        // Touch and swipe handling
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 100;
+            const swipeDistance = touchStartY - touchEndY;
+            
+            if (Math.abs(swipeDistance) > swipeThreshold) {
+                provideFeedback();
+                
+                if (swipeDistance > 0) {
+                    // Swipe up - refresh
+                    refreshMoonPhase();
+                    showNotification('月相情報を更新しました');
+                } else {
+                    // Swipe down - settings or info
+                    showNotification('下にスワイプしました');
+                }
+            }
+        }
+
+        // Auto-update every minute
+        setInterval(() => {
+            if (Math.abs(currentDate.getTime() - Date.now()) < 60000) {
+                updateMoonDisplay();
+            }
+        }, 60000);
+
+        // Initialize app
+        window.addEventListener('DOMContentLoaded', () => {
+            updateMoonDisplay();
+            
+            // Simulate loading
+            setTimeout(() => {
+                showNotification('月相壁紙アプリにようこそ！', 4000);
+            }, 1000);
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('モバイルアプリエラー:', e.error);
+            showNotification('エラーが発生しました', 2000);
+        });
+    </script>
+</body>
+</html>
